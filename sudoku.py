@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 import utils
 
 
@@ -44,20 +45,17 @@ class Sudoku(object):
 
     @staticmethod
     def _merge_sub_tables(sub_table_ls: list) -> pd.DataFrame:
-
         sub_matrices_np_ls = [np.array(sub_table) for sub_table in sub_table_ls]
 
-        # Crear una matriz vacía de 9x9
-        final_matrix = np.zeros((9, 9), dtype=int)
+        final_matrix_df = np.zeros((9, 9), dtype=int)
 
-        # Iterar sobre las submatrices
-        for sub_idx, sub_matrix in enumerate(sub_matrices_np_ls):
+        for sub_idx, sub_table_df in enumerate(sub_matrices_np_ls):
             row_start = (sub_idx // 3) * 3
             col_start = (sub_idx % 3) * 3
-            final_matrix[row_start:row_start + 3, col_start:col_start + 3] = sub_matrix
+            final_matrix_df[row_start:row_start + 3, col_start:col_start + 3] = sub_table_df
 
-        # Mostrar la matriz final
-        print(final_matrix)
+        print(final_matrix_df)
+        return final_matrix_df
 
     def _check_full_line(self, position_x: int, position_y: int) -> (bool, bool):
         full_table_df = self._table_df
@@ -131,7 +129,10 @@ class Sudoku(object):
                     empty_positions_ls.append((i, j))
         return empty_positions_ls
 
-    def _fill_empty_cells(self, empty_cells_ls: list, available_solutions_ls: list, sub_table_df: pd.DataFrame):
+    def _fill_empty_cells(self,
+                          empty_cells_ls: list,
+                          available_solutions_ls: list,
+                          sub_table_df: pd.DataFrame) -> (pd.DataFrame, dict):
 
         solutions_dd = dict()
         empty_cells_idx = 0
@@ -176,12 +177,11 @@ class Sudoku(object):
                     backtracking = True
                     empty_cells_idx -= 1
                     break
-        return sub_table_df
+        return sub_table_df, solutions_dd
 
-    def _solve_sub_table(self, sub_table_df: pd.DataFrame) -> pd.DataFrame:
+    def _solve_sub_table(self, sub_table_df: pd.DataFrame) -> (pd.DataFrame, dict):
         expected_ls = self._expected_ls
-        large = len(sub_table_df)
-        valid = False
+
         empty_cells_ls = self._find_empty_cells(table_df=sub_table_df)
         cleaned_sub_table_df = sub_table_df.astype(int)
         # ravel gives a "set" of items from the dataframe.
@@ -189,11 +189,11 @@ class Sudoku(object):
         effective_ls = list(effective_set)
         available_solutions_ls = utils.list_operator(ls=[expected_ls, effective_ls], operation="complement")
 
-        solved_sub_table_df = self._fill_empty_cells(empty_cells_ls=empty_cells_ls,
-                                                     available_solutions_ls=available_solutions_ls,
-                                                     sub_table_df=sub_table_df)
+        solved_sub_table_df, solutions_dd = self._fill_empty_cells(empty_cells_ls=empty_cells_ls,
+                                                                   available_solutions_ls=available_solutions_ls,
+                                                                   sub_table_df=sub_table_df)
 
-        return solved_sub_table_df
+        return solved_sub_table_df, solutions_dd
 
     def _basic_solution(self) -> pd.DataFrame:
         """
@@ -202,8 +202,12 @@ class Sudoku(object):
         """
         sub_table_ls = self._divide_full_table()
         solution_sub_tables_ls = list()
-        for sub_table in sub_table_ls:
-            solved_sub_table_df = self._solve_sub_table(sub_table)
+        solutions_dict_ls = list()
+        for idx, sub_table in enumerate(sub_table_ls):
+            print(idx)
+            solved_sub_table_df, solutions_dd = self._solve_sub_table(sub_table_df=sub_table)
+            solutions_dict_ls.append(solutions_dd)
             solution_sub_tables_ls.append(solved_sub_table_df)
-        self._merge_sub_tables(solution_sub_tables_ls)
+        self._merge_sub_tables(sub_table_ls=solution_sub_tables_ls)
+        print("solutions dd:\n", solutions_dict_ls)
 
