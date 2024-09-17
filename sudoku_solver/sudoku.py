@@ -4,7 +4,7 @@ import random
 import numpy as np
 import pandas as pd
 
-from sudoku_solver import utils
+import utils
 
 
 class Sudoku(object):
