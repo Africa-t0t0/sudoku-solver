@@ -1,4 +1,4 @@
-from sudoku import Sudoku
+from sudoku_solver.sudoku import Sudoku
 
 path = "csv/sudoku_sencillo.csv"
 
