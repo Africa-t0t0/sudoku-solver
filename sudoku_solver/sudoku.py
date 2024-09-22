@@ -62,7 +62,6 @@ class Sudoku(object):
             col_start = (sub_idx % 3) * 3
             final_matrix_df[row_start:row_start + 3, col_start:col_start + 3] = sub_table_df
 
-        print(f"\nfinal_matrix_df: \n {final_matrix_df}", end="")
         return final_matrix_df
 
     def _check_full_line(self, position_x: int, position_y: int) -> (bool, bool):
@@ -191,8 +190,6 @@ class Sudoku(object):
         backtracking = False
         large_empty_cells = len(empty_cells_ls)
         large_available_solutions = len(available_solutions_ls)
-        print("large empty cells", large_empty_cells)
-        print("large available solutions", large_available_solutions)
         if prev_solutions_dd:
             sub_table_df = self._clean_sub_table_df(sub_table_df=sub_table_df, prev_solutions_dd=prev_solutions_dd)
 
@@ -298,5 +295,3 @@ class Sudoku(object):
     def brute_force(self) -> bool:
         solution = self._basic_solution()
         return solution
-
-
